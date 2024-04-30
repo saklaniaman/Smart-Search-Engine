@@ -1,0 +1,112 @@
+import openai
+from langchain.prompts import PromptTemplate
+from langchain.llms import OpenAI
+import requests
+from bs4 import BeautifulSoup
+import re
+from langchain.prompts import PromptTemplate
+from duckduckgo_search import DDGS
+search = input("Search here: ")
+
+# Create a list to store the links
+link_list = []
+main_data =[]
+
+# Create a counter to track the number of results fetched
+results_fetched = 0
+
+with DDGS() as ddgs:
+    for r in ddgs.text(search,
+                       region='in-en',
+                       safesearch='oN',
+                       timelimit='y'):
+        # Append the link to the link_list
+        link_list.append(r['href'])
+       
+        main_data.append(r)
+       
+        # Increment the counter
+        results_fetched += 1
+       
+        # Break the loop if 10 results have been fetched
+        if results_fetched >= 10:
+            break
+
+# Print the list of links
+# for link in link_list:
+#     print(link)
+   
+    x=link_list
+
+def generate_content(url):
+    # Fetch the web page's HTML content
+    response = requests.get(url)
+    html_content = response.content
+
+# Parse HTML using BeautifulSoup
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+# Extract relevant text data
+    text_data = soup.get_text()
+
+# Remove extra spaces using regular expression
+    cleaned_text_data = re.sub('\s+', ' ', text_data).strip()
+
+    def extract_words(text, word_limit):
+        words = text.split()
+        if len(words) > word_limit:
+            extracted_words = ' '.join(words[:word_limit])
+            return extracted_words
+        else:
+            return text
+
+
+    word_limit = 1000
+
+
+    extracted_text = extract_words(cleaned_text_data, word_limit)
+    prmpt=extracted_text+" from the above content remove all the unnecessary data which is  
+    not requred and give only the relevant information in a paragraph style. If there is content
+    which is supposed to come in bullet points then convert this content in paragraph form. I dont want any content in bullet points."
+    LLM_MODEL=OpenAI(temperature=0,openai_api_key="API-Key")
+    one = LLM_MODEL(prompt=prmpt)
+    return one
+ 
+data=" "
+lists=[]
+for link in x:
+    extracted_text = generate_content(link)
+    #print(extracted_text)
+    #lists.append(extracted_text)
+    data = extracted_text +"\n\n" + data
+   
+
+
+temp=PromptTemplate(input_variables=["quest"], template="you are an expert in content and 
+data analysis, you have to review and analyse each paragraph mentioned above. and you have
+to tell me the top three  best content paragraphs after your expert analysis from the  above. 
+Remember that paragraphs are in the above data are divided wherer ever '\n\n' is written. 
+Understand that whenever you see \n it means that next paragraph has started. You only have 
+to tell me the serial number of the paragraph assuming that first paragraph is 1 and so on. Do not give me any words. 
+I strictly just want three numbers. also i dont want any introduction in the beginning for example 'After analyzing the provided paragraphs,
+here are the top three best content paragraphs based on my expert analysis:'For example Paragraph 1 , Paragraph 5 and Paragraph 7 have the best 
+content.Output : 1, 5, 7  {quest}")
+last_step = data + "you are an expert in content and data analysis, you have to review and analyse each paragraph mentioned above. 
+and you have to tell me the top three  best content paragraphs after your expert analysis from the  above. You only have to tell me 
+the serial number of the paragraph assuming that first paragraph is 1 and so on. Do not give me any words. I strictly just want three 
+numbers. also i dont want any introduction in the beginning for example 'After analyzing the provided paragraphs, here are the top three 
+best content paragraphs based on my expert analysis:'For example Paragraph 1 , Paragraph 5 and Paragraph 7 have the best content.Output : 1, 5, 7"
+LLM_MODEL=OpenAI(temperature=0,openai_api_key="API-Link")
+serial_numbers = LLM_MODEL(prompt=temp.format(quest=data))
+print(serial_numbers)
+
+numbers = re.findall(r'\d+', serial_numbers)
+numbers_list = [int(number) for number in numbers]
+numbers_list
+p=0
+for i in numbers_list:
+    if numbers_list[i]>10:
+        p=i%10
+    print(x[p-1])
+    
+print( extracted_text)
