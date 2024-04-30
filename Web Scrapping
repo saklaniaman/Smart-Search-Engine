@@ -1,0 +1,119 @@
+!pip install -U duckduckgo_search
+search = input(" Search here  ")
+with DDGS() as ddgs:
+    for r in ddgs.text(search,
+                       region='in-en',
+                       safesearch='oN',
+                       timelimit='y',):
+        print(r)
+
+# Searching for pdf files
+search = input(" You are want to search about ")
+with DDGS() as ddgs:
+    for r in ddgs.text(' Machine Learning filetype:pdf', region='in-en', safesearch='off', timelimit='y'):
+        print(r)
+
+
+# Using lite backend and limit the number of results to 10
+from itertools import islice
+
+with DDGS() as ddgs:
+    ddgs_gen = ddgs.text("Address for Chandigarh University", backend="lite")
+    for r in islice(ddgs_gen, 10):
+        print(r)
+
+search = input(" Search Here about a famous personality ")
+from duckduckgo_search import DDGS
+
+with DDGS() as ddgs:
+    for r in ddgs.answers( search):
+        print(r)
+
+from duckduckgo_search import DDGS
+
+with DDGS() as ddgs:
+    keywords = 'Shah Rukh Khan'
+    ddgs_images_gen = ddgs.images(
+      keywords,
+      region="wt-wt",
+      safesearch="off",
+      size=None,
+      color="Monochrome",
+      type_image=None,
+      layout=None,
+      license_image=None,
+    )
+    for r in ddgs_images_gen:
+        print(r)
+
+from duckduckgo_search import DDGS
+
+with DDGS() as ddgs:
+    keywords = 'Shah Rukh Khan'
+    ddgs_videos_gen = ddgs.videos(
+      keywords,
+      region="wt-wt",
+      safesearch="off",
+      timelimit="w",
+      resolution="high",
+      duration="medium",
+    )
+    for r in ddgs_videos_gen:
+        print(r)
+
+import requests
+from bs4 import BeautifulSoup
+
+# URL of the website to scrape
+url = "https://www.redhat.com/en/topics/linux"
+
+# Send an HTTP GET request to the URL
+response = requests.get(url)
+
+# Check if the request was successful
+if response.status_code == 200:
+    # Parse the HTML content using BeautifulSoup
+    soup = BeautifulSoup(response.content, "html.parser")
+    
+    # Extract and format the page title
+    page_title = soup.title.text.strip()
+    page_title_paragraph = f"Page Title: {page_title}\n\n"
+    
+    # Extract main headings
+    main_headings = soup.find_all("h2")
+    main_headings_paragraph = "Main Headings:\n"
+    for heading in main_headings:
+        main_headings_paragraph += f"- {heading.text.strip()}\n"
+
+    # Combine the extracted information into paragraphs
+    full_paragraph = page_title_paragraph + main_headings_paragraph
+
+    # Print the formatted information
+    print(full_paragraph)
+
+else:
+    print("Failed to retrieve the webpage")
+
+
+
+from duckduckgo_search import DDGS
+
+search = input("Search here: ")
+
+# Create a counter to track the number of printed results
+results_printed = 0
+
+with DDGS() as ddgs:
+    for r in ddgs.text(search,
+                       region='in-en',
+                       safesearch='oN',
+                       timelimit='y'):
+        # Print the result
+        print(r)
+        
+        # Increment the counter
+        results_printed += 1
+        
+        # Break the loop if 10 results have been printed
+        if results_printed >= 10:
+            break
