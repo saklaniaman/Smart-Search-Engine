@@ -1,0 +1,38 @@
+from duckduckgo_search import DDGS
+
+search = input("Search here: ")
+
+# Create a list to store the links
+link_list = []
+
+main_data =[]
+
+# Create a counter to track the number of results fetched
+results_fetched = 0
+
+with DDGS() as ddgs:
+    for r in ddgs.text(search,
+                       region='in-en',
+                       safesearch='oN',
+                       timelimit='y'):
+        # Append the link to the link_list
+        link_list.append(r['href'])
+        
+        main_data.append(r)
+        
+        # Increment the counter
+        results_fetched += 1
+        
+        # Break the loop if 10 results have been fetched
+        if results_fetched >= 10:
+            break
+
+# Print the list of links
+for link in link_list:
+    print(link)
+
+body_string=" "
+    
+for d in main_data:
+    body_data = d['body']
+    body_string += body_data + "\n"
